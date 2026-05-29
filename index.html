@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CYBH — Boiler Health Check</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg: #fafaf9;
+  --bg-warm: #f5f5f4;
+  --bg-cool: #f0f0ee;
+  --surface: #ffffff;
+  --surface-hover: #fcfcfb;
+  --text: #1c1917;
+  --text-secondary: #57534e;
+  --text-tertiary: #a8a29e;
+  --accent: #1c1917;
+  --accent-warm: #78716c;
+  --border: #e7e5e4;
+  --border-light: #f5f5f4;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+body > iframe[src*="tawk.to"],
+body > div[class*="tawk"],
+body > div[id*="tawk"],
+body > div[data-tawk] {
+  position: fixed !important;
+  z-index: 999999 !important;
+  transform: none !important;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes heroLabel {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes heroTitle {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroText {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroButtons {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.stagger-1 { transition-delay: 0.08s; }
+.stagger-2 { transition-delay: 0.16s; }
+.stagger-3 { transition-delay: 0.24s; }
+.stagger-4 { transition-delay: 0.32s; }
+.stagger-5 { transition-delay: 0.40s; }
+.stagger-6 { transition-delay: 0.48s; }
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 60px 32px 60px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+}
+
+.hero-label {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  animation: heroLabel 0.6s var(--ease-out) 0.2s both;
+}
+
+.hero h1 {
+  font-size: clamp(44px, 5.5vw, 72px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  color: var(--text);
+  animation: heroTitle 0.8s var(--ease-out) 0.35s both;
+}
+
+.hero h1 strong {
+  font-weight: 500;
+  color: var(--accent-warm);
+  display: inline-block;
+  transition: color 0.3s var(--ease);
+}
+.hero:hover h1 strong { color: var(--text); }
+
+.hero p {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto 32px;
+  line-height: 1.65;
+  font-weight: 400;
+  animation: heroText 0.7s var(--ease-out) 0.5s both;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: heroButtons 0.6s var(--ease-out) 0.65s both;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.25s var(--ease);
+  letter-spacing: -0.1px;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-warm);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s var(--ease-out);
+  z-index: 0;
+}
+.btn-primary:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.btn-primary span { position: relative; z-index: 1; }
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  transition: all 0.3s var(--ease);
+}
+.btn-ghost:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text);
+  transform: translateY(-2px);
+  background: var(--surface);
+}
+
+/* ===== CHAT POPUP ===== */
+.chat-popup {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s var(--ease-out);
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.chat-popup.show {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  pointer-events: auto;
+}
+.chat-popup::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--text);
+}
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.stat-item {
+  padding: 28px 0;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.stat-item:last-child { border-right: none; }
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1;
+  transition: transform 0.3s var(--ease-spring);
+}
+.stat-item:hover .stat-value {
+  transform: scale(1.08);
+  color: var(--accent-warm);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  transition: letter-spacing 0.3s var(--ease);
+}
+.stat-item:hover .stat-label {
+  letter-spacing: 2.5px;
+  color: var(--text-secondary);
+}
+
+/* ===== SECTIONS ===== */
+.section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.section-pad { padding-top: 60px; padding-bottom: 60px; }
+
+.section-header {
+  margin-bottom: 40px;
+}
+
+.section-header h2 {
+  font-size: clamp(32px, 3.5vw, 48px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.section-header h2 strong {
+  font-weight: 500;
+  color: var(--accent-warm);
+  transition: color 0.3s var(--ease);
+}
+.section-header:hover h2 strong { color: var(--text); }
+
+.section-header p {
+  color: var(--text-secondary);
+  font-size: 17px;
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+/* ===== DESIGNED GRID ===== */
+.designed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.designed-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  transition: all 0.4s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+.designed-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--text);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease-out);
+}
+.designed-card:hover::before {
+  transform: scaleX(1);
+}
+.designed-card:hover {
+  border-color: #d6d3d1;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  transform: translateY(-4px);
+}
+
+.designed-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  transition: color 0.3s var(--ease), transform 0.3s var(--ease-spring);
+}
+.designed-card:hover .designed-num {
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+.designed-card h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  transition: transform 0.3s var(--ease);
+}
+.designed-card:hover h3 { transform: translateX(2px); }
+
+.designed-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* ===== PROCESS ===== */
+.process-section {
+  background: var(--bg-warm);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.process-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.process-sticky {
+  position: sticky;
+  top: 24px;
+}
+
+.process-sticky h2 {
+  font-size: clamp(32px, 3.5vw, 48px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.process-sticky h2 strong {
+  font-weight: 500;
+  color: var(--accent-warm);
+}
+
+.process-sticky p {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.process-steps::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.process-step {
+  padding: 24px 0 24px 28px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  transition: all 0.3s var(--ease);
+}
+.process-step::before {
+  content: '';
+  position: absolute;
+  left: -4px; top: 30px;
+  width: 9px; height: 9px;
+  background: var(--bg-warm);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  transition: all 0.3s var(--ease-spring);
+}
+.process-step:hover::before {
+  background: var(--text);
+  border-color: var(--text);
+  transform: scale(1.3);
+}
+.process-step:first-child { padding-top: 0; }
+.process-step:first-child::before { top: 6px; }
+.process-step:last-child { border-bottom: none; }
+
+.process-step:hover {
+  padding-left: 36px;
+}
+
+.process-step-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  transition: color 0.3s var(--ease);
+}
+.process-step:hover .process-step-num { color: var(--text); }
+
+.process-step h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  transition: transform 0.3s var(--ease);
+}
+.process-step:hover h3 { transform: translateX(4px); }
+
+.process-step p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+  max-width: 420px;
+}
+
+/* ===== SYSTEM ===== */
+.system-block {
+  background: var(--text);
+  border-radius: var(--radius);
+  padding: 60px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+}
+.system-block::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+  transform: scale(0);
+  transition: transform 0.8s var(--ease-out);
+}
+.system-block:hover::before {
+  transform: scale(1);
+}
+.system-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.system-block h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  color: var(--bg);
+  position: relative;
+  z-index: 1;
+}
+
+.system-block h2 strong {
+  font-weight: 500;
+  color: #a8a29e;
+  transition: color 0.4s var(--ease);
+}
+.system-block:hover h2 strong { color: #d6d3d1; }
+
+.system-block p {
+  color: #a8a29e;
+  font-size: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== FEATURES ===== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: all 0.4s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 0;
+  background: var(--text);
+  transition: height 0.4s var(--ease-out);
+  z-index: 0;
+}
+.feature-card:hover::after {
+  height: 4px;
+}
+.feature-card:hover {
+  border-color: #d6d3d1;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  transform: translateY(-3px);
+}
+
+.feature-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  transition: all 0.3s var(--ease-spring);
+  position: relative;
+  z-index: 1;
+}
+.feature-card:hover .feature-icon {
+  background: var(--text);
+  border-color: var(--text);
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.feature-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s var(--ease);
+}
+.feature-card:hover .feature-icon svg {
+  stroke: var(--bg);
+}
+
+.feature-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s var(--ease);
+}
+.feature-card:hover h4 { transform: translateX(2px); }
+
+.feature-card p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== TAGLINES ===== */
+.taglines {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tagline {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: all 0.4s var(--ease-out);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  letter-spacing: -0.2px;
+  cursor: default;
+}
+.tagline:first-child { padding-top: 0; }
+
+.tagline:hover {
+  color: var(--text);
+  padding-left: 16px;
+}
+
+.tagline::before {
+  content: "";
+  width: 0; height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: all 0.4s var(--ease-out);
+}
+.tagline:hover::before {
+  width: 48px;
+  background: var(--text-tertiary);
+}
+
+/* ===== PRICING ===== */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  text-align: center;
+  transition: all 0.5s var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+.price-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.02) 100%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+}
+.price-card:hover::before { opacity: 1; }
+.price-card:hover {
+  border-color: #d6d3d1;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  transform: translateY(-4px);
+}
+
+.price-card.featured {
+  background: var(--text);
+  border-color: var(--text);
+}
+.price-card.featured::before {
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.03) 100%);
+}
+.price-card.featured:hover {
+  box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+}
+
+.price-card.featured h3,
+.price-card.featured .price-value,
+.price-card.featured p {
+  color: var(--bg);
+}
+
+.price-card.featured .price-value span {
+  color: #a8a29e;
+}
+
+.price-card h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  transition: letter-spacing 0.3s var(--ease);
+}
+.price-card:hover h3 { letter-spacing: 3px; }
+
+.price-value {
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
+  color: var(--text);
+  line-height: 1;
+  transition: transform 0.3s var(--ease-spring);
+}
+.price-card:hover .price-value {
+  transform: scale(1.05);
+}
+
+.price-value span {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.price-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.price-card .btn {
+  width: 100%;
+}
+
+.price-card.featured .btn-primary {
+  background: var(--bg);
+  color: var(--text);
+}
+.price-card.featured .btn-primary:hover {
+  background: var(--bg-warm);
+}
+
+/* ===== FINAL CTA ===== */
+.final-cta {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 32px;
+  text-align: center;
+}
+
+.final-cta h2 {
+  font-size: clamp(32px, 3.5vw, 52px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  line-height: 1.1;
+}
+
+.final-cta h2 strong {
+  font-weight: 500;
+  color: var(--accent-warm);
+}
+
+.final-cta p {
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--bg-warm);
+  border-top: 1px solid var(--border);
+  padding: 50px 32px 32px;
+}
+
+.footer-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 50px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  transition: transform 0.25s var(--ease);
+}
+.footer-brand:hover { transform: translateX(4px); }
+
+.footer-mark {
+  width: 32px; height: 32px;
+  background: var(--text);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: var(--bg);
+  font-size: 14px;
+  transition: all 0.3s var(--ease-spring);
+}
+.footer-brand:hover .footer-mark {
+  transform: rotate(-8deg) scale(1.1);
+  background: var(--accent-warm);
+}
+
+.footer-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.footer-about {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+.footer-col h4 {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.25s var(--ease);
+  letter-spacing: -0.1px;
+  position: relative;
+  display: inline-block;
+}
+.footer-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 1px;
+  background: var(--text);
+  transition: width 0.3s var(--ease-out);
+}
+.footer-links a:hover {
+  color: var(--text);
+  transform: translateX(4px);
+}
+.footer-links a:hover::after { width: 100%; }
+
+.footer-bottom {
+  text-align: center;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .stats-inner { grid-template-columns: 1fr; }
+  .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 20px 0; }
+  .stat-item:last-child { border-bottom: none; }
+  .designed-grid, .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .process-grid { grid-template-columns: 1fr; }
+  .process-sticky { position: relative; top: 0; text-align: center; margin-bottom: 40px; }
+  .process-sticky p { margin: 0 auto; }
+  .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 40px; }
+  .process-steps::before { display: none; }
+  .process-step { padding-left: 0; }
+  .process-step::before { display: none; }
+  .process-step:hover { padding-left: 0; }
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 50px 20px 40px; }
+  .section { padding: 0 20px; }
+  .section-pad { padding-top: 40px; padding-bottom: 40px; }
+  .designed-grid, .features-grid, .pricing-grid, .footer-grid { grid-template-columns: 1fr; }
+  .system-block { padding: 40px 24px; }
+  .final-cta { padding: 0 20px; }
+  footer { padding: 40px 20px 24px; }
+}
+</style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+
+<body>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-label">Live Diagnostics Available</div>
+    <h1>Check your <strong>boiler health</strong></h1>
+    <p>With our advanced digital technology you can figure out your boiler performance, safety status, and forthcoming issues before they turn into expensive breakdowns.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://sites.google.com/view/my-boiler-health/home/get-protected"><span>Get CYBH £50.99</span></a>
+      <a class="btn btn-ghost" href="https://sites.google.com/view/my-boiler-health/home/get-protected">Get CYBH LL £55.99</a>
+      <span style="position:relative;display:inline-block;">
+        <a class="btn btn-ghost" id="chat-expert-btn" href="#" onclick="event.preventDefault(); if(typeof Tawk_API!=='undefined'){if(Tawk_API.showWidget)Tawk_API.showWidget();if(Tawk_API.maximize)Tawk_API.maximize();}var p=document.getElementById('chat-popup');if(p)p.classList.remove('show');return false;">Chat with Expert</a>
+        <div id="chat-popup" class="chat-popup" onclick="var btn=document.getElementById('chat-expert-btn');if(btn)btn.click();">You have a message from expert?</div>
+      </span>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item reveal stagger-1">
+      <div class="stat-value">24/7</div>
+      <div class="stat-label">Monitoring Active</div>
+    </div>
+    <div class="stat-item reveal stagger-2">
+      <div class="stat-value">98%</div>
+      <div class="stat-label">Issue Detection Rate</div>
+    </div>
+    <div class="stat-item reveal stagger-3">
+      <div class="stat-value">£0</div>
+      <div class="stat-label">Unexpected Repair Costs</div>
+    </div>
+  </div>
+</div>
+
+<div class="section section-pad">
+  <div class="section-header reveal">
+    <h2>Designed to <strong>help you</strong></h2>
+    <p>Our platform uses smart analysis, data checks, and logical system diagnostics to give you a clear overview of your boiler condition.</p>
+  </div>
+  <div class="designed-grid">
+    <div class="designed-card reveal-scale stagger-1">
+      <div class="designed-num">01</div>
+      <h3>Smart Analysis</h3>
+      <p>Our platform uses smart analysis, data checks, and logical system diagnostics to give you a clear overview of your boiler condition in a simple and easy way.</p>
+    </div>
+    <div class="designed-card reveal-scale stagger-2">
+      <div class="designed-num">02</div>
+      <h3>Data Checks</h3>
+      <p>We transform complex technical information into easy-to-understand guidance so you can take the right action.</p>
+    </div>
+    <div class="designed-card reveal-scale stagger-3">
+      <div class="designed-num">03</div>
+      <h3>System Diagnostics</h3>
+      <p>Get a clear overview of your boiler condition with professional insights and actionable recommendations.</p>
+    </div>
+  </div>
+</div>
+
+<div class="process-section section-pad">
+  <div class="section">
+    <div class="process-grid">
+      <div class="process-sticky reveal-left">
+        <h2>How boiler health <strong>check works</strong></h2>
+        <p>Three simple steps to complete boiler protection. Our digital platform guides you through every stage with precision and clarity.</p>
+      </div>
+      <div class="process-steps">
+        <div class="process-step reveal-right stagger-1">
+          <div class="process-step-num">Step 01</div>
+          <h3>Assemble Information</h3>
+          <p>Gather all basic boiler information such as brand, model, and symptoms.</p>
+        </div>
+        <div class="process-step reveal-right stagger-2">
+          <div class="process-step-num">Step 02</div>
+          <h3>Problem Identification</h3>
+          <p>Analysis boiler data, fault patterns, performance rules, user-reported symptoms, digital boiler health monitoring.</p>
+        </div>
+        <div class="process-step reveal-right stagger-3">
+          <div class="process-step-num">Step 03</div>
+          <h3>Condition Report</h3>
+          <p>Provide a comprehensive report regarding boiler health, condition, possible issues as well as recommended next steps.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section section-pad">
+  <div class="system-block reveal-scale">
+    <h2>CYBH <strong>System</strong></h2>
+    <p>Our system focuses on performance behaviour, pressure stability, fault history, and user symptoms. Advanced digital monitoring for complete peace of mind.</p>
+  </div>
+</div>
+
+<div class="section section-pad">
+  <div class="section-header reveal">
+    <h2>Advanced <strong>digital technology</strong></h2>
+    <p>Cutting-edge tools to keep your boiler running perfectly.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal-scale stagger-1">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <h4>Early fault detection</h4>
+      <p>System alerts before failures occur</p>
+    </div>
+    <div class="feature-card reveal-scale stagger-2">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <h4>Performance monitoring</h4>
+      <p>Real-time efficiency tracking</p>
+    </div>
+    <div class="feature-card reveal-scale stagger-3">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <h4>Smart diagnostics</h4>
+      <p>AI-powered problem analysis</p>
+    </div>
+    <div class="feature-card reveal-scale stagger-4">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4m0 4h.01"/></svg>
+      </div>
+      <h4>Risk prevention alerts</h4>
+      <p>Proactive safety warnings</p>
+    </div>
+  </div>
+</div>
+
+<div class="section section-pad">
+  <div class="section-header reveal">
+    <h2>Smart <strong>boiler health</strong></h2>
+    <p>Why homeowners trust our platform.</p>
+  </div>
+  <div class="taglines">
+    <div class="tagline reveal stagger-1">Smart boiler health. Safer heating. Fewer breakdowns.</div>
+    <div class="tagline reveal stagger-2">Digital boiler health monitoring. Problems found early.</div>
+    <div class="tagline reveal stagger-3">Advanced technology for safer, smarter boilers.</div>
+    <div class="tagline reveal stagger-4">Know your boiler's health—before it fails.</div>
+  </div>
+</div>
+
+<div class="section section-pad">
+  <div class="section-header reveal" style="text-align:center; margin:0 auto 40px; max-width:600px;">
+    <h2>Choose your <strong>protection</strong></h2>
+    <p>Don't wait for a breakdown. Check your boiler health and save your time, money, and stress.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card reveal-scale stagger-1">
+      <h3>Standard Plan</h3>
+      <div class="price-value">£50.99<span>/check</span></div>
+      <p>Complete boiler health check with standard reporting and email support.</p>
+      <a class="btn btn-primary" href="https://sites.google.com/view/my-boiler-health/home/get-protected"><span>Get CYBH</span></a>
+    </div>
+    <div class="price-card featured reveal-scale stagger-2">
+      <h3>Landlord Plan</h3>
+      <div class="price-value">£55.99<span>/check</span></div>
+      <p>Enhanced coverage for rental properties with priority support and compliance docs.</p>
+      <a class="btn btn-primary" href="https://sites.google.com/view/my-boiler-health/home/get-protected"><span>Get CYBH LL</span></a>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="padding-bottom:80px;">
+  <div class="final-cta reveal">
+    <h2>Never worry about your <strong>boiler again</strong></h2>
+    <p>Get protected now. Contact us today for your boiler health check.</p>
+    <a class="btn btn-ghost" href="mailto:contactboilerhealth@atomicmail.io">Email Us</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="reveal stagger-1">
+        <a href="#" class="footer-brand">
+          <div class="footer-mark">B</div>
+          <span class="footer-name">Boiler Health</span>
+        </a>
+        <p class="footer-about">Smart boiler protection, diagnostics, and home insurance made simple for every home and landlord.</p>
+      </div>
+      <div class="footer-col reveal stagger-2">
+        <h4>Coverage</h4>
+        <div class="footer-links">
+          <a href="https://sites.google.com/view/my-boiler-health/plans?authuser=1">Plans</a>
+          <a href="https://sites.google.com/view/my-boiler-health/sybd?authuser=1">SYBD</a>
+          <a href="#">CYBH</a>
+        </div>
+      </div>
+      <div class="footer-col reveal stagger-3">
+        <h4>Company</h4>
+        <div class="footer-links">
+          <a href="https://sites.google.com/view/my-boiler-health/contact-us/about-us?authuser=1">About Us</a>
+          <a href="https://sites.google.com/view/my-boiler-health/contact-us/privacy-policy">Privacy Policy</a>
+        </div>
+      </div>
+      <div class="footer-col reveal stagger-4">
+        <h4>Contact</h4>
+        <div class="footer-links">
+          <a href="mailto:contactboilerhealth@atomicmail.io">contactboilerhealth@atomicmail.io</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 BoilerHealth. All Rights Reserved.
+    </div>
+  </div>
+</footer>
+
+<!-- Start of Tawk.to Script -->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+Tawk_API.onBeforeLoad = function(){
+    Tawk_API.hideWidget();
+};
+Tawk_API.onChatMessageAgent = function(){
+    var popup = document.getElementById('chat-popup');
+    if(popup && typeof Tawk_API !== 'undefined' && (!Tawk_API.isChatMaximized || !Tawk_API.isChatMaximized())){
+        popup.classList.add('show');
+        setTimeout(function(){ if(popup) popup.classList.remove('show'); }, 6000);
+    }
+};
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69fc50d3d66edf1c3469954e/1jo0pnet0';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!-- End of Tawk.to Script -->
+
+<script>
+(function() {
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -60px 0px',
+    threshold: 0.1
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right').forEach(el => {
+    observer.observe(el);
+  });
+})();
+</script>
+
+</body>
+</html>
